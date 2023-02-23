@@ -53,17 +53,35 @@ axiosInstance.interceptors.request.use((request: AxiosRequestConfig) => {
 
 function App() {
   const authProvider: AuthProvider = {
-    login: ({ credential }: CredentialResponse) => {
+    login: async ({ credential }: CredentialResponse) => {
       const profileObj = credential ? parseJwt(credential) : null;
 
+      // save user to mongodb
       if (profileObj) {
-        localStorage.setItem(
-          'user',
-          JSON.stringify({
-            ...profileObj,
+        const response = await fetch('http://localhost:8080/api/v1/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: profileObj.email,
+            name: profileObj.name,
             avatar: profileObj.picture,
-          })
-        );
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.status === 200) {
+          localStorage.setItem(
+            'user',
+            JSON.stringify({
+              ...profileObj,
+              avatar: profileObj.picture,
+              userid: data._id,
+            })
+          );
+        } else {
+          return Promise.reject();
+        }
       }
 
       localStorage.setItem('token', `${credential}`);
@@ -109,7 +127,7 @@ function App() {
       <GlobalStyles styles={{ html: { WebkitFontSmoothing: 'auto' } }} />
       <RefineSnackbarProvider>
         <Refine
-          dataProvider={dataProvider('https://api.fake-rest.refine.dev')}
+          dataProvider={dataProvider('http://localhost:8080/api/v1')}
           notificationProvider={notificationProvider}
           ReadyPage={ReadyPage}
           catchAll={<ErrorComponent />}

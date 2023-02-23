@@ -3,8 +3,8 @@ import * as dotenv from 'dotenv';
 import cors from 'cors';
 
 import connectDB from './mongodb/connect.js';
-import propertyRoutes from './routes/property.routes.js';
-import userRoutes from './routes/user.routes.js';
+import userRouter from './routes/user.routes.js';
+import propertyRouter from './routes/property.routes.js';
 
 dotenv.config();
 
@@ -16,8 +16,8 @@ app.get('/', (req, res) => {
   res.send({ message: 'Hello, world!' });
 });
 
-app.use('/api/v1/properties', propertyRoutes);
-app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/users', userRouter);
+app.use('/api/v1/properties', propertyRouter);
 
 const startServer = async () => {
   try {
